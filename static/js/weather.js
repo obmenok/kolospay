@@ -1,11 +1,9 @@
-/* Погода для шапки: Open-Meteo (без ключа, работает из браузера).
-   Коды WMO переводятся в имена иконок OpenWeather, которые лежат в static/img/weather. */
+/* Погода для шапки. Данные раз в 30 минут кладёт в weather.json задача GitHub Actions
+   (scripts/update_weather.js), поэтому браузер посетителя ходит только на свой домен.
+   Коды WMO переводятся в имена иконок OpenWeather из static/img/weather. */
 (function (root) {
   "use strict";
-  var LAT = 58.6035, LON = 49.668;           // Киров
-  var URL = "https://api.open-meteo.com/v1/forecast?latitude=" + LAT + "&longitude=" + LON +
-            "&current=temperature_2m,weather_code,is_day&timezone=auto";
-  var CACHE_KEY = "kolos-weather", TTL_MS = 10 * 60 * 1000;
+  var MAX_AGE_MS = 3 * 60 * 60 * 1000; // старше 3 часов — не показываем
 
   function iconFor(wmo, isDay) {
     var d = isDay ? "d" : "n", base;
@@ -24,25 +22,29 @@
     return base + d;
   }
 
+  /* ответ Open-Meteo -> {temperature, code} */
   function parse(json) {
     var c = json && json.current;
     if (!c || typeof c.temperature_2m !== "number") return null;
     return { temperature: Math.round(c.temperature_2m), code: iconFor(c.weather_code, c.is_day === 1) };
   }
 
-  function load() {
-    try {
-      var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-      if (cached && Date.now() - cached.t < TTL_MS) return Promise.resolve(cached.w);
-    } catch (e) {}
-    return fetch(URL).then(function (r) { return r.json(); }).then(function (j) {
-      var w = parse(j);
-      if (w) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), w: w })); } catch (e) {} }
-      return w;
-    });
+  /* содержимое weather.json -> {temperature, code} или null, если данные устарели/некорректны */
+  function fresh(data, now) {
+    if (!data || typeof data.temperature !== "number" || !data.code || !data.updated) return null;
+    var age = (now || Date.now()) - Date.parse(data.updated);
+    if (!(age >= -5 * 60 * 1000 && age <= MAX_AGE_MS)) return null;
+    return { temperature: data.temperature, code: data.code };
   }
 
-  var api = { iconFor: iconFor, parse: parse, load: load };
+  function load() {
+    return fetch("weather.json", { cache: "no-cache" }).then(function (r) {
+      if (!r.ok) return null;
+      return r.json();
+    }).then(function (j) { return fresh(j); });
+  }
+
+  var api = { iconFor: iconFor, parse: parse, fresh: fresh, load: load };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Weather = api;
 })(typeof window !== "undefined" ? window : globalThis);
