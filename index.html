@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>СНТ Колос-1</title>
+  <meta name="description" content="Приложение для формирование QR кодов на оплату услуг и взносов в СНТ Колос-1">
+  <meta name="theme-color" content="#2ab1eb">
+  <meta name="msapplication-TileColor" content="#2b5797">
+  <meta name="msapplication-TileImage" content="static/img/export-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="СНТ Колос-1">
+  <meta property="og:title" content="СНТ Колос-1">
+  <meta property="og:description" content="Приложение для формирование QR кодов на оплату услуг и взносов в СНТ Колос-1">
+  <meta property="og:image" content="static/img/export-icon.png">
+  <meta name="google-site-verification" content="jX5Bg1uZ4SYxpiH6UG7vouKKcMxnuaAXkZOmBEuxVIQ">
+  <meta name="yandex-verification" content="781ddb890520d739">
+  <link rel="icon" href="static/img/export-icon.png">
+  <link rel="apple-touch-icon" href="static/img/export-icon.png">
+  <link rel="stylesheet" href="static/css/style.css">
+  
+  <!-- Yandex.Metrika counter -->
+  <script>
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    ym(102898692, "init", {clickmap:true, trackLinks:true, accurateTrackBounce:true});
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/102898692" style="position:absolute;left:-9999px" alt=""></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+  
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 class="brand">СНТ Колос-1</h1>
+    <div class="weather" id="weather" hidden>
+      <span id="weather-temp"></span>
+      <img id="weather-icon" width="30" height="30" alt="">
+    </div>
+  </header>
+
+  <select id="section" class="field" aria-label="Раздел">
+    <option value="fee">Членский взнос</option><option value="electricity">Электроэнергия</option><option value="arrears">Прошлые периоды</option><option value="info">Информация об участке</option><option value="finance">Финансы</option><option value="map">Схема участков</option><option value="about">Общая информация</option>
+  </select>
+
+  <!-- Платежи и информация об участке -->
+  <div id="view-plot">
+    <div id="inputs-electricity" class="inputs" hidden>
+      <input id="t1" class="field" type="number" inputmode="numeric" min="0" step="1" placeholder="Предыдущие показания">
+      <input id="t2" class="field" type="number" inputmode="numeric" min="0" step="1" placeholder="Текущие показания">
+    </div>
+    <div id="inputs-arrears" class="inputs" hidden>
+      <input id="amount" class="field" type="number" inputmode="numeric" min="0" step="1" placeholder="Сумма">
+    </div>
+
+    <label class="hint" for="plot">Выберите номер участка</label>
+    <select id="plot" class="field">
+      <option value=""></option>
+      <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</option><option value="57">57</option><option value="58">58</option><option value="59">59</option><option value="60">60</option><option value="61">61</option><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67">67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option><option value="71">71</option><option value="72">72</option><option value="73">73</option><option value="74">74</option><option value="75">75</option><option value="76">76</option><option value="77">77</option><option value="78">78</option><option value="79">79</option><option value="80">80</option><option value="81">81</option><option value="82">82</option><option value="83">83</option><option value="84">84</option><option value="85">85</option><option value="86">86</option><option value="87">87</option><option value="88">88</option><option value="89">89</option><option value="90">90</option><option value="91">91</option><option value="92">92</option><option value="93">93</option><option value="94">94</option><option value="95">95</option><option value="96">96</option><option value="97">97</option><option value="98">98</option><option value="99">99</option><option value="100">100</option><option value="101">101</option><option value="102">102</option><option value="103">103</option><option value="104">104</option><option value="105">105</option><option value="106">106</option><option value="107">107</option><option value="108">108</option><option value="109">109</option><option value="110">110</option><option value="111">111</option><option value="112">112</option><option value="113">113</option><option value="114">114</option><option value="115">115</option><option value="116">116</option><option value="117">117</option><option value="118">118</option><option value="119">119</option><option value="120">120</option><option value="121">121</option><option value="122">122</option><option value="123">123</option><option value="124">124</option><option value="125">125</option><option value="126">126</option><option value="127">127</option><option value="128">128</option><option value="129">129</option><option value="130">130</option><option value="131">131</option><option value="132">132</option><option value="133">133</option><option value="134">134</option><option value="135">135</option><option value="136">136</option><option value="137">137</option><option value="138">138</option><option value="139">139</option><option value="140">140</option><option value="141">141</option><option value="142">142</option><option value="143">143</option><option value="144">144</option><option value="145">145</option><option value="146">146</option><option value="147">147</option><option value="148">148</option><option value="149">149</option><option value="150">150</option><option value="151">151</option><option value="152">152</option><option value="153">153</option><option value="154">154</option><option value="155">155</option><option value="156">156</option><option value="157">157</option><option value="158">158</option><option value="159">159</option><option value="170">170</option><option value="171">171</option><option value="172">172</option><option value="173">173</option><option value="174">174</option><option value="175">175</option><option value="176">176</option><option value="282">282</option><option value="283">283</option><option value="287">287</option>
+    </select>
+
+    <div id="result-text" class="result" aria-live="polite"></div>
+    <img id="qr" class="qr" alt="QR-код для оплаты" hidden>
+    <img id="plan" class="plan" alt="План участка" hidden>
+  </div>
+
+  <!-- Финансы -->
+  <div id="view-finance" hidden></div>
+
+  <!-- Схема участков -->
+  <div id="view-map" hidden>
+    <div class="tabs">
+      <button type="button" data-map="scheme" class="active">Схема</button>
+      <button type="button" data-map="google">Google</button>
+      <button type="button" data-map="yandex">Яндекс</button>
+    </div>
+    <div id="map-scheme" class="map-pane"></div>
+    <div id="map-google" class="map-pane" hidden></div>
+    <div id="map-yandex" class="map-pane" hidden></div>
+  </div>
+
+  <!-- Общая информация -->
+  <div id="view-about" class="about" hidden>
+    <p><strong>Контакты:</strong></p>
+<p>
+  Председатель:<br>
+  Гладышева Ольга Михайловна<br>
+  <a href="tel:+79229176134">+79229176134</a><br>
+  Казначей: <a href="tel:+79097170264">+79097170264</a><br>
+  Электрик: <a href="tel:+79229039121">+79229039121</a>
+</p>
+
+<p><strong>Реквизиты:</strong></p>
+<p>
+  Полное наименование организации:<br>
+  Некоммерческое садоводческое товарищество "Колос-1"<br>
+  ИНН/КПП<br>
+  4346026874/434501001<br>
+  Юридический адрес организации:<br>
+  610912, г. Киров, пос. Дороничи<br>
+  Наименование банка:<br>
+  АО КБ "ХЛЫНОВ", г. Киров<br>
+  БИК: 043304711<br>
+  Расчетный счет:<br>
+  40703810400130000655<br>
+  Корреспондентский счет:<br>
+  30101810100000000711
+</p>
+
+<p><strong>Стоимость услуг:</strong></p>
+<ul>
+  <li>Членский взнос при оплате до 1 июля - 500 ₽ за сотку, после 1 июля - 700 ₽ за сотку</li>
+  <li>Электроэнергия - 5,05 ₽ за кВт</li>
+</ul>
+
+<p><strong>Порядок оплаты:</strong></p>
+<ol>
+  <li>В соответствующем разделе сайта сформировать QR код</li>
+  <li>Сохранить код в галерею телефона как изображение или скриншот экрана</li>
+  <li>В приложении любого банка выбрать вариант оплаты по QR коду</li>
+  <li>Выбрать вариант сканировать из файла, затем загрузить код из галереи</li>
+  <li>При необходимости уменьшить размер кода под рамку считывания</li>
+  <li>Проверить свои данные, сумму оплаты, а также получателя</li>
+  <li>Оплатить</li>
+</ol>
+
+<p><strong>Справочная информация</strong></p>
+<p>Общее количество участков - 165</p>
+<p>
+  Квартал №1:<br>
+  Количество участков - 158<br>
+  Площадь участков - 95 593 м²<br>
+  Площадь территории общего пользования и дорог - 19 977 м²<br>
+  Общая площадь территории - 115 570 м²
+</p>
+<p>
+  Квартал №2:<br>
+  Количество участков - 7<br>
+  Площадь участков - 7 278 м²
+</p>
+<p>
+  Общая длина улиц - 3 760 м, из них:<br>
+  ул. Центральная - 490 м<br>
+  ул. Вишневая - 90 м<br>
+  ул. Трудовая - 165 м<br>
+  ул. Садовая - 180 м<br>
+  ул. Цветочная - 205 м<br>
+  ул. Прудная - 215 м<br>
+  ул. Лесная - 155 м<br>
+  ул. Озерная - 195 м<br>
+  ул. Барская - 450 м<br>
+  пер. Барский - 445 м<br>
+  ул. Янтарная - 1010 м<br>
+  ул. Малая Барская - 160 м
+</p>
+
+<p><strong>Обратная связь:</strong></p>
+<p>
+  Разработка схемы участков и генератора QR кодов для оплаты - Буяков Сергей.<br>
+  Все замечания и предложения можно отправлять на почту <a href="mailto:bs26@ya.ru">bs26@ya.ru</a>.
+</p>
+
+  </div>
+</div>
+
+<script src="static/js/plots.js"></script>
+<script src="static/vendor/qrcode.js"></script>
+<script src="static/js/payments.js"></script>
+<script src="static/js/weather.js"></script>
+<script src="static/js/app.js"></script>
+</body>
+</html>
