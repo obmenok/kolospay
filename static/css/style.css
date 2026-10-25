@@ -16,7 +16,7 @@ body {
 }
 .app { max-width: 720px; margin: 0 auto; padding: 0 20px 40px; }
 
-.top { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 12px; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 12px; min-height: 56px; }
 .brand { margin: 0; font-size: 18px; font-weight: bold; }
 .weather { display: flex; align-items: center; gap: 4px; font-size: 14px; }
 .weather[hidden] { display: none; }
