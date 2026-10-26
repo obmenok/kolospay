@@ -7,7 +7,9 @@
   --bg: #fff;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
+/* старые браузеры без scrollbar-gutter: полоса прокрутки всегда на месте */
+@supports not (scrollbar-gutter: stable) { html { overflow-y: scroll; } }
 body {
   margin: 0;
   background: var(--bg);
