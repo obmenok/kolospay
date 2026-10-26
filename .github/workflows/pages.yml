@@ -3,8 +3,6 @@ name: Публикация сайта
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: "7,37 * * * *"   # каждые 30 минут: обновляет погоду
   workflow_dispatch:
 
 permissions:
@@ -24,14 +22,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
       - name: Собрать сайт
         run: |
           mkdir _site
           cp -r index.html static .nojekyll _site/
-          node scripts/update_weather.js _site/weather.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
