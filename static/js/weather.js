@@ -7,7 +7,7 @@
    бесплатный ключ только для сайта на https://home.openweathermap.org/api_keys */
 (function (root) {
   "use strict";
-  var API_KEY = "390c8911b10d0176aeceb068d00b6940";
+  var API_KEY = "d9c256507412dd7321d768838047313b";
   var LAT = 58.6035, LON = 49.668;        // Киров
   var CACHE_KEY = "kolos-weather-v2";
   var TTL_MS = 10 * 60 * 1000;            // обновляем не чаще раза в 10 минут
