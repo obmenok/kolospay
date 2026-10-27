@@ -105,7 +105,7 @@
     ];
     // Сведения о правах: данные из выписки; null — по участку данных нет вообще
     if (p.rights === null || p.rights === undefined) {
-      lines.push("Сведения о правах - данные отсутствуют");
+      lines.push("Сведения о правах - Данные отсутствуют");
       return lines;
     }
     var rights = p.rights.filter(function (r) { return r.kind === "right"; });
