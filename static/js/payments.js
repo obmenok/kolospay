@@ -14,8 +14,9 @@
       KPP: "434501001"
     },
     feeRatePerM2Kop: 500,      // 5 ₽ за м² (500 ₽ за сотку)
-    electricityRateKop: 550,   // 5,5 ₽ за кВт·ч
-    maxAmountRub: 10000000
+    electricityRateKop: 505,   // 5,05 ₽ за кВт·ч
+    maxAmountRub: 10000000,
+    showEncumbrances: true     // показывать ипотеку и запрещение регистрации; false — скрыть
   };
 
   function PaymentError(message) { this.message = message; }
@@ -87,8 +88,12 @@
     throw new PaymentError("Неизвестный тип платежа");
   }
 
+  function rightLine(r) {
+    return r.type + " - № " + r.number + " от " + r.date;
+  }
+
   function plotInfoLines(p) {
-    return [
+    var lines = [
       "Участок № " + p.number,
       "Информация из Росреестра:",
       "Кадастровый номер - " + p.cadastral,
@@ -98,6 +103,26 @@
       "Тип использования - " + p.use,
       "Площадь - " + p.area + " м²"
     ];
+    // Сведения о правах: данные из выписки; null — по участку данных нет вообще
+    if (p.rights === null || p.rights === undefined) {
+      lines.push("Сведения о правах - данные отсутствуют");
+      return lines;
+    }
+    var rights = p.rights.filter(function (r) { return r.kind === "right"; });
+    var enc = CONFIG.showEncumbrances ? p.rights.filter(function (r) { return r.kind === "encumbrance"; }) : [];
+    if (!rights.length && !enc.length) {
+      lines.push("Сведения о правах - отсутствуют");
+      return lines;
+    }
+    if (rights.length) {
+      lines.push("Сведения о правах:");
+      rights.forEach(function (r) { lines.push(rightLine(r)); });
+    }
+    if (enc.length) {
+      lines.push("Ограничения (обременения):");
+      enc.forEach(function (r) { lines.push(rightLine(r)); });
+    }
+    return lines;
   }
 
   var api = { CONFIG: CONFIG, PaymentError: PaymentError, buildPayment: buildPayment,
