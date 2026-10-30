@@ -51,7 +51,7 @@
 #scheme #lines, #scheme #text, #scheme #areas, #scheme .bg { pointer-events: none; }
 
 /* --- страница и интерфейс --- */
-html, body { margin: 0; height: 100%; overflow: hidden; background: #eee;
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg);
   font-family: "Segoe UI", Tahoma, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; }
 #view { position: absolute; inset: 0; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 #view:active { cursor: grabbing; }
