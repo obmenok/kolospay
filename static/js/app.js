@@ -102,6 +102,7 @@
   }
   function onSection() {
     var s = el.section.value;
+    if (s === "treasurer") { location.href = "static/treasurer.html"; return; }   // отдельная страница казначея
     resetForm();
     el.viewPlot.hidden = !(s in PAYMENT_SECTIONS || s === "info");
     el.viewFinance.hidden = s !== "finance";

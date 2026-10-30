@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Казначей — выписка банка</title>
+  <link rel="stylesheet" href="css/treasurer.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="back" href="../">← В приложение</a>
+    <h1>Казначей: разнесение выписки</h1>
+  </header>
+  <p class="privacy">Файлы обрабатываются прямо в вашем браузере и никуда не отправляются: ни на сайт, ни в Google.
+    В таблицу попадает только то, что вы подтвердили и скопировали сами.</p>
+
+  <section class="files">
+    <label class="drop" id="drop-stmt">
+      <span class="drop-title">1. Выписка банка</span>
+      <span class="drop-hint">Файл из личного кабинета банка (Excel). Нажмите или перетащите сюда.</span>
+      <span class="drop-status" id="st-stmt"></span>
+      <input type="file" id="f-stmt" accept=".xls,.xlsx,.xml">
+    </label>
+    <label class="drop" id="drop-led">
+      <span class="drop-title">2. Таблица учёта</span>
+      <span class="drop-hint">Скачайте таблицу из Google: Файл → Скачать → Microsoft Excel (.xlsx).</span>
+      <span class="drop-status" id="st-led"></span>
+      <input type="file" id="f-led" accept=".xlsx,.xls">
+    </label>
+  </section>
+
+  <section id="summary" class="summary" hidden></section>
+
+  <section id="review" hidden>
+    <div class="toolbar">
+      <button type="button" id="bulk" class="btn primary"></button>
+      <div class="filters" role="group" aria-label="Показать">
+        <button type="button" class="chipbtn active" data-filter="all">Все</button>
+        <button type="button" class="chipbtn" data-filter="pending">Не подтверждённые</button>
+        <button type="button" class="chipbtn" data-filter="check">Требуют внимания</button>
+      </div>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section id="output" class="output" hidden>
+    <h2>Что внести в таблицу</h2>
+    <div id="out-status" class="out-status"></div>
+    <div class="tablewrap"><table id="out-table"></table></div>
+    <div class="out-actions">
+      <button type="button" id="copy" class="btn primary">Скопировать строки</button>
+      <button type="button" id="download" class="btn">Скачать .xlsx</button>
+      <span id="out-msg" class="out-msg" aria-live="polite"></span>
+    </div>
+    <p id="out-help" class="out-help"></p>
+  </section>
+
+  <footer class="foot"><button type="button" id="reset-rules" class="link"></button></footer>
+</div>
+
+<datalist id="contrs"></datalist>
+<script src="vendor/xlsx.mini.min.js"></script>
+<script src="js/plots.js"></script>
+<script src="js/bank.js"></script>
+<script src="js/treasurer.js"></script>
+</body>
+</html>

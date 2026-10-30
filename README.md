@@ -24,6 +24,9 @@ Settings → Pages → Custom domain: `kolospay.ru`; у регистратора
 - `static/scheme.html` — интерактивная векторная схема участков (SVG встроен между маркерами `SCHEME:BEGIN/END`).
 - `static/css/scheme.css` — **все цвета схемы** и состояния участков; правятся без пересборки.
 - `static/js/scheme.js` — масштаб, поиск, карточка участка и объект `Scheme` для будущих интерактивов (подсветка участков и т. п.).
+- `static/treasurer.html`, `static/js/bank.js`, `static/js/treasurer.js`, `static/css/treasurer.css` — страница казначея (пункт меню «Казначей»):
+  загрузка выписки банка и скачанной таблицы учёта, построчное подтверждение новых операций, готовые строки для вставки в таблицу.
+  Файлы читаются только в браузере. Библиотека для чтения xlsx — `static/vendor/xlsx.mini.min.js` (SheetJS, лицензия рядом).
 - `tools/build_scheme.py` + `tools/source/scheme.pdf` — сборка SVG из PDF. Нужна только при изменении самого чертежа:
   `python tools/build_scheme.py tools/source/scheme.pdf static/scheme.html --plots static/js/plots.js`
   (нужны poppler-utils, `pip install shapely pillow`). Скрипт сам проверяет, что каждый номер попал ровно в один контур.
