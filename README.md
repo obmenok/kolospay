@@ -21,5 +21,10 @@ Settings → Pages → Custom domain: `kolospay.ru`; у регистратора
 - `static/js/plots.js` — данные участков.
 - `static/js/weather.js` — погода (координаты Кирова вверху файла).
 - `static/js/app.js` — интерфейс, ссылки на Google-таблицу и карты Google/Яндекс.
-- `static/map.html` — интерактивная схема участков (Leaflet лежит локально).
+- `static/scheme.html` — интерактивная векторная схема участков (SVG встроен между маркерами `SCHEME:BEGIN/END`).
+- `static/css/scheme.css` — **все цвета схемы** и состояния участков; правятся без пересборки.
+- `static/js/scheme.js` — масштаб, поиск, карточка участка и объект `Scheme` для будущих интерактивов (подсветка участков и т. п.).
+- `tools/build_scheme.py` + `tools/source/scheme.pdf` — сборка SVG из PDF. Нужна только при изменении самого чертежа:
+  `python tools/build_scheme.py tools/source/scheme.pdf static/scheme.html --plots static/js/plots.js`
+  (нужны poppler-utils, `pip install shapely pillow`). Скрипт сам проверяет, что каждый номер попал ровно в один контур.
 - `static/vendor/qrcode.js` — библиотека QR (qrcode-generator, MIT).

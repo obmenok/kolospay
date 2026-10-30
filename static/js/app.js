@@ -123,7 +123,7 @@
     document.querySelectorAll(".tabs button").forEach(function (b) {
       b.classList.toggle("active", b.getAttribute("data-map") === name);
     });
-    var src = { scheme: "static/map.html", google: cfg.googleMapUrl, yandex: cfg.yandexMapUrl }[name];
+    var src = { scheme: "static/scheme.html", google: cfg.googleMapUrl, yandex: cfg.yandexMapUrl }[name];
     addIframe($("map-" + name), src);
   }
 

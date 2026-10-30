@@ -1,0 +1,82 @@
+/* ==========================================================================
+   Схема участков. ЗДЕСЬ меняются все цвета схемы — пересобирать SVG не нужно.
+   Геометрия (контуры, номера, линии) лежит в scheme.html между маркерами
+   SCHEME:BEGIN/END и создаётся скриптом tools/build_scheme.py.
+   ========================================================================== */
+:root {
+  /* участки */
+  --plot:        #fff1e5;   /* обычный участок */
+  --plot-pink:   #ffe5e5;   /* участки 170–176 */
+  --plot-hover:  #9fd0ff;   /* под курсором */
+  --plot-sel:    #9fd0ff;   /* выбранный (по клику / поиску) */
+
+  /* прочие области */
+  --a-green:     #f1ffe5;   /* общая территория */
+  --a-park:      #bae58d;   /* парк */
+  --a-water:     #98cbff;   /* пруды, пожарный водоём */
+  --a-orange:    #ffbf7f;   /* контейнер для мусора */
+
+  /* чертёж */
+  --bg:          #ffffff;   /* фон схемы */
+  --line:        #000000;   /* линии */
+  --line-width:  0.3;       /* толщина линий в единицах схемы */
+  --text:        #000000;   /* надписи и номера */
+
+  /* интерфейс */
+  --accent:      #007bff;
+}
+
+/* --- заливки: имена классов задаёт build_scheme.py --- */
+#scheme .bg        { fill: var(--bg); }
+#scheme .plot      { fill: var(--plot); }
+#scheme .plot-pink { fill: var(--plot-pink); }
+#scheme .a-green   { fill: var(--a-green); }
+#scheme .a-park    { fill: var(--a-park); }
+#scheme .a-water   { fill: var(--a-water); }
+#scheme .a-orange  { fill: var(--a-orange); }
+#scheme #lines     { stroke: var(--line); stroke-width: var(--line-width); }
+#scheme #text      { fill: var(--text); }
+
+/* --- состояния участков (порядок важен: нижние правила сильнее верхних) --- */
+#scheme .plot { cursor: pointer; }
+#scheme .plot:hover { fill: var(--plot-hover); }
+
+/* Сюда добавляются новые состояния. Пример (подсветка должников):
+   #scheme .plot.debtor { fill: #f4a6a6; }
+   Включается из кода: Scheme.mark(59, "debtor"), выключается: Scheme.clear("debtor") */
+
+#scheme .plot.sel { fill: var(--plot-sel); }
+
+/* --- служебное: на клики не реагируют --- */
+#scheme #lines, #scheme #text, #scheme #areas, #scheme .bg { pointer-events: none; }
+
+/* --- страница и интерфейс --- */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #eee;
+  font-family: "Segoe UI", Tahoma, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; }
+#view { position: absolute; inset: 0; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+#view:active { cursor: grabbing; }
+#view svg { display: block; width: 100%; height: 100%; }
+
+#search { position: absolute; left: 15px; bottom: 25px; z-index: 5; display: flex; gap: 5px;
+  background: #fff; padding: 5px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0, 0, 0, .3); }
+#search input { width: 140px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; outline: none; font: inherit; font-size: 14px; }
+#search button { padding: 8px 12px; border: 0; border-radius: 4px; background: var(--accent); color: #fff; cursor: pointer; font: inherit; font-size: 14px; }
+#search button:hover { background: #0056b3; }
+
+#zoom { position: absolute; left: 15px; top: 15px; z-index: 5; display: flex; flex-direction: column;
+  background: #fff; border-radius: 4px; box-shadow: 0 1px 5px rgba(0, 0, 0, .4); overflow: hidden; }
+#zoom button { width: 30px; height: 30px; border: 0; background: #fff; font-size: 20px; line-height: 30px; cursor: pointer; color: #333; padding: 0; }
+#zoom button + button { border-top: 1px solid #ccc; }
+#zoom button:hover { background: #f4f4f4; }
+
+#tip { position: absolute; z-index: 6; display: none; min-width: 220px; padding: 15px; border-radius: 8px;
+  background: #fff; box-shadow: 0 4px 25px rgba(0, 0, 0, .3); font-size: 14px; }
+#tip .head { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+  font-size: 16px; font-weight: bold; color: #333; }
+#tip .row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+#tip .label { color: #777; font-size: 12px; }
+#tip .value { font-weight: 500; color: #000; text-align: right; }
+
+@media (max-width: 600px) {
+  #zoom, #search { display: none; }
+}
