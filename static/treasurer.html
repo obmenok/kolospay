@@ -13,8 +13,8 @@
     <a class="back" href="../">← В приложение</a>
     <h1>Казначей: разнесение выписки</h1>
   </header>
-  <p class="privacy">Файлы обрабатываются прямо в вашем браузере и никуда не отправляются: ни на сайт, ни в Google.
-    В таблицу попадает только то, что вы подтвердили и скопировали сами.</p>
+  <p class="privacy">Выписка обрабатывается прямо в вашем браузере и на сайт не отправляется.
+    В таблицу Google уходят только строки, которые вы подтвердили (дата, сумма, назначение, контрагент, комментарий, номер документа).</p>
 
   <section class="files">
     <label class="drop" id="drop-stmt">
@@ -29,6 +29,12 @@
       <span class="drop-status" id="st-led"></span>
       <input type="file" id="f-led" accept=".xlsx,.xls">
     </label>
+  </section>
+
+  <section id="code-box" class="summary" hidden>
+    <label>Код казначея: <input type="password" id="code" autocomplete="off"></label>
+    <button type="button" id="code-save" class="btn">Сохранить</button>
+    <span class="drop-hint">Запоминается в этом браузере. Нужен, чтобы читать и писать в таблицу.</span>
   </section>
 
   <section id="summary" class="summary" hidden></section>
@@ -50,6 +56,7 @@
     <div id="out-status" class="out-status"></div>
     <div class="tablewrap"><table id="out-table"></table></div>
     <div class="out-actions">
+      <button type="button" id="send" class="btn primary" hidden>Внести в таблицу</button>
       <button type="button" id="copy" class="btn primary">Скопировать строки</button>
       <button type="button" id="download" class="btn">Скачать .xlsx</button>
       <span id="out-msg" class="out-msg" aria-live="polite"></span>
@@ -64,6 +71,7 @@
 <script src="vendor/xlsx.mini.min.js"></script>
 <script src="js/plots.js"></script>
 <script src="js/bank.js"></script>
+<script src="js/treasurer-config.js"></script>
 <script src="js/treasurer.js"></script>
 </body>
 </html>

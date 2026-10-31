@@ -36,6 +36,50 @@
     return m >= 11 && m <= 14 ? c : d === 1 ? a : d >= 2 && d <= 4 ? b : c;
   }
 
+  // ---------- связь с Google-таблицей (если задан адрес скрипта) ----------
+  var SCRIPT_URL = window.KOLOS_SCRIPT_URL || "", CODE_KEY = "kolos-treasurer-code-v1";
+  function getCode() { try { return localStorage.getItem(CODE_KEY) || ""; } catch (e) { return ""; } }
+  function remote(payload) {
+    payload.code = getCode();
+    return fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(j.error || "Ошибка скрипта."); return j; },
+        function () { throw new Error("Нет связи с таблицей. Проверьте интернет."); });
+  }
+  function loadRemoteLedger() {
+    if (!SCRIPT_URL) return Promise.resolve();
+    if (!getCode()) { state.ledger = null; setStatus("st-led", "drop-led", false, "✗ Введите код казначея ниже."); return Promise.resolve(); }
+    setStatus("st-led", "drop-led", true, "Загружаю таблицу…");
+    return remote({ action: "ledger" }).then(function (j) {
+      state.ledger = j.ledger; var l = j.ledger;
+      setStatus("st-led", "drop-led", true, "✓ Таблица Google: " + l.rows.length + " " + plural(l.rows.length, "строка", "строки", "строк") + ", последняя " + B.ruFromIso(l.lastDate));
+    }).catch(function (err) {
+      state.ledger = null; setStatus("st-led", "drop-led", false, "✗ " + err.message);
+      $("drop-led").hidden = false; // запасной путь: загрузить скачанный файл вручную
+    });
+  }
+  if (SCRIPT_URL) {
+    $("drop-led").hidden = true; $("code-box").hidden = false; $("send").hidden = false;
+    $("copy").hidden = $("download").hidden = true;
+    $("code").value = getCode();
+    $("code-save").addEventListener("click", function () {
+      try { localStorage.setItem(CODE_KEY, $("code").value.trim()); } catch (e) {}
+      loadRemoteLedger().then(analyze);
+    });
+    $("send").addEventListener("click", function () {
+      var rows = okRows(); if (!rows.length || !state.ledger) return;
+      if (!confirm("Внести в таблицу строк: " + rows.length + "?")) return;
+      $("send").disabled = true; $("out-msg").textContent = "Отправляю…";
+      remote({ action: "append", expectLastRow: state.ledger.lastRow, rows: rows.map(function (r) {
+        return { date: r.date, debit: r.debit, credit: r.credit, cat: r.cat, contr: r.contr, comm: r.comm, doc: r.doc };
+      }) }).then(function (j) {
+        rememberRules();
+        return loadRemoteLedger().then(function () {
+          analyze(); flash("Готово: внесено строк " + j.added + (j.skipped ? ", уже были в таблице: " + j.skipped : "") + ".");
+        });
+      }).catch(function (err) { $("out-msg").textContent = "✗ " + err.message; }).then(function () { $("send").disabled = false; });
+    });
+  }
+
   // ---------- загрузка файлов ----------
   $("f-stmt").addEventListener("change", function (e) {
     var f = e.target.files[0]; if (!f) return;
@@ -46,7 +90,7 @@
         ", " + B.ruFromIso(s.from) + " – " + B.ruFromIso(s.to));
     }).catch(function (err) {
       state.stmt = null; setStatus("st-stmt", "drop-stmt", false, "✗ " + err.message);
-    }).then(analyze);
+    }).then(function () { return state.stmt && SCRIPT_URL ? loadRemoteLedger() : null; }).then(analyze);
   });
   $("f-led").addEventListener("change", function (e) {
     var f = e.target.files[0]; if (!f) return;
@@ -77,10 +121,12 @@
     var matched = B.matchLedger(st.ops, led.rows, function (i) { return cl[i].contr; });
     var used = {}; matched.forEach(function (m) { if (m >= 0) used[m] = 1; });
     var plots = {}; (window.PLOTS || []).forEach(function (p) { plots[p.number] = 1; });
+    var docs = {}; led.rows.forEach(function (r) { if (r.doc) docs[r.doc] = 1; });
+    matched.forEach(function (m, i) { if (m < 0 && st.ops[i].doc && docs[st.ops[i].doc]) matched[i] = -2; });
     var lateLimit = B.dayNum(led.lastDate) - 7;
 
     st.ops.forEach(function (o, i) {
-      if (matched[i] >= 0) return;
+      if (matched[i] !== -1) return;
       var c = cl[i];
       state.rows.push({
         id: state.rows.length, doc: o.doc, date: o.date, debit: o.debit, credit: o.credit, corr: o.corr, purpose: o.purpose,
@@ -243,6 +289,7 @@
     }
     $("out-status").innerHTML = msg;
     $("copy").disabled = $("download").disabled = ok.length === 0;
+    if (SCRIPT_URL) { $("out-help").textContent = "Строки будут добавлены в конец таблицы Google; повторно внесённые операции (по номеру банковского документа) пропускаются."; return; }
     $("out-help").innerHTML = "Вставьте скопированные строки в таблицу Google в ячейку <b>A" + (led.lastRow + 1) +
       "</b> (первая пустая строка после последней). Остаток в столбце ОСТАТОК посчитается формулой, как в остальных строках.";
   }
