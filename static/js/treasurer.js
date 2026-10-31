@@ -73,7 +73,7 @@
     state.rows = [];
     if (!st || !led) return;
 
-    var cl = st.ops.map(function (o) { return B.classify(o, state.rules); });
+    var cl = B.classifyAll(st.ops, state.rules);
     var matched = B.matchLedger(st.ops, led.rows, function (i) { return cl[i].contr; });
     var used = {}; matched.forEach(function (m) { if (m >= 0) used[m] = 1; });
     var plots = {}; (window.PLOTS || []).forEach(function (p) { plots[p.number] = 1; });
@@ -84,7 +84,8 @@
       var c = cl[i];
       state.rows.push({
         id: state.rows.length, doc: o.doc, date: o.date, debit: o.debit, credit: o.credit, corr: o.corr, purpose: o.purpose,
-        cat: c.cat, contr: c.contr, comm: "", status: c.status, readings: c.readings, note: c.note,
+        cat: c.cat, contr: c.contr, comm: c.comm || "", status: c.status, readings: c.readings,
+        notes: (c.note ? [c.note] : []).concat(c.warns.map(function (x) { return x.text; })),
         late: B.dayNum(o.date) < lateLimit, state: "pending"
       });
     });
@@ -146,8 +147,7 @@
     var catOpts = '<option value="">— выберите —</option>' + B.CATEGORIES.map(function (c) {
       return '<option value="' + esc(c) + '"' + (c === r.cat ? " selected" : "") + ">" + esc(c) + "</option>";
     }).join("");
-    var notes = [];
-    if (r.note) notes.push(r.note);
+    var notes = r.notes.slice();
     var m = /^УЧАСТОК № (\d+)$/.exec(r.contr);
     if (m && state.plots && !state.plots[+m[1]]) notes.push("участка №" + m[1] + " нет в списке участков: проверьте номер");
     if (r.late) notes.push("дата заметно раньше последней строки таблицы");
@@ -166,7 +166,7 @@
       '<label>Контрагент<input data-f="contr" list="contrs" value="' + esc(r.contr) + '"' + dis + "></label>" +
       '<label>Комментарий<input data-f="comm" value="' + esc(r.comm) + '"' + dis + "></label>" +
       '<div class="actions">' + actions + "</div></div>" +
-      (notes.length ? '<div class="note">' + esc(notes.join("; ")) + "</div>" : "") + "</article>";
+      (notes.length ? '<div class="note">⚠ ' + esc(notes.join("; ")) + "</div>" : "") + "</article>";
   }
   function visible(r) {
     if (state.filter === "pending") return r.state === "pending";

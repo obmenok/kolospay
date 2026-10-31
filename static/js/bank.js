@@ -159,7 +159,7 @@
   var RE_FEE = /членск|ч[лн]\.?\s*взнос|взнос|прошлые периоды/i;
 
   function readings(p) {
-    var t1 = /т\s*1\s*[=\-:]?\s*(\d+)/i.exec(p), t2 = /т\s*2\s*[=\-:]?\s*(\d+)/i.exec(p);
+    var t1 = /(?:^|[^а-яёa-z])т\s*1\s*[=\-:]?\s*(\d+)/i.exec(p), t2 = /(?:^|[^а-яёa-z])т\s*2\s*[=\-:]?\s*(\d+)/i.exec(p);
     if (t1 || t2) return { kind: "t12", t1: t1 ? +t1[1] : null, t2: t2 ? +t2[1] : null };
     var m = /пред[а-яё]*\.?\s*(\d+)\D+(?:текущ[а-яё]*|тек[а-яё]*)\.?\s*(\d[\d ]*\d|\d)/i.exec(p);
     if (m) return { kind: "prevcur", prev: +m[1], cur: +m[2].replace(/ /g, "") };
@@ -210,6 +210,90 @@
     return res("", contr, "none", null, "не понятно, за что платёж");
   }
 
+  // ---------- проверки платежей за электроэнергию ----------
+  /* Тарифы, коп. за кВт·ч. Для оплаты в приложении: Т1 — предыдущие показания, Т2 — текущие,
+   * сумма = (Т2 − Т1) × тариф. После смены тарифа часть жителей ещё платит по старому: GRACE_DAYS — сколько дней после смены принимать и старый тариф (сейчас 0).
+   * ВАЖНО: при изменении тарифа добавьте новую строку сюда (и в payments.js). */
+  var TARIFFS = [{ from: "2000-01-01", kop: 450 }, { from: "2025-08-01", kop: 505 }, { from: "2026-10-31", kop: 550 }];
+  var GRACE_DAYS = 0;   // переходного периода нет: с даты смены тарифа платежи по старому тарифу помечаются
+
+  function ratesAt(iso) {
+    var cur = 0;
+    TARIFFS.forEach(function (t, i) { if (t.from <= iso) cur = i; });
+    var res = [TARIFFS[cur].kop];
+    if (cur > 0 && dayNum(iso) - dayNum(TARIFFS[cur].from) < GRACE_DAYS) res.push(TARIFFS[cur - 1].kop);
+    return res;
+  }
+  function olderRates(iso) {          // тарифы, действовавшие раньше текущего (ближайший — первым)
+    var cur = 0;
+    TARIFFS.forEach(function (t, i) { if (t.from <= iso) cur = i; });
+    return TARIFFS.slice(0, cur).map(function (t) { return t.kop; }).reverse();
+  }
+  function rub(k) { return kopText(k) + " ₽"; }
+  function tariffText(iso) { return kopText(ratesAt(iso)[0]) + " ₽/кВт·ч"; }
+
+  /* Предупреждения по одной оплате электроэнергии. last — последняя известная оплата участка: {cur, date} или undefined.
+   * Каждое предупреждение: { text — подробно для казначея, comment — коротко для столбца «Комментарий» (может быть пустым) }. */
+  function electroWarns(op, c, last) {
+    var w = [], amt = op.credit, rates = ratesAt(op.date), rd = c.readings, adv = /аванс/i.test(op.purpose);   // аванс не освобождает от показаний
+    var multiple = rates.some(function (r) { return amt % r === 0; });
+    var notMultiple = { text: "сумма " + rub(amt) + " не кратна тарифу " + tariffText(op.date), comment: "сумма не кратна тарифу" };
+    var oldRate = olderRates(op.date).filter(function (r) { return amt % r === 0; })[0];
+    if (oldRate) notMultiple = { text: "сумма " + rub(amt) + " кратна старому тарифу " + kopText(oldRate) + " ₽/кВт·ч, а не действующему " + tariffText(op.date),
+                                 comment: "возможно, оплата по старому тарифу " + kopText(oldRate) };
+    var a = null, b = null;
+    if (rd) { a = rd.kind === "t12" ? rd.t1 : rd.prev; b = rd.kind === "t12" ? rd.t2 : rd.cur; }
+    if (!rd) {
+      w.push({ text: "в назначении платежа нет показаний" + (adv ? " (аванс)" : ""), comment: adv ? "аванс: уточнить показания" : "нет показаний: уточнить" });
+      if (!multiple) w.push(notMultiple);
+    } else if (a === null || b === null) {
+      w.push({ text: "показания указаны не полностью", comment: "показания неполные: уточнить" });
+      if (!multiple) w.push(notMultiple);
+    } else if (b < a) {
+      w.push({ text: "текущие показания (" + b + ") меньше предыдущих (" + a + ")", comment: "текущие показания меньше предыдущих" });
+    } else if (b === a) {
+      w.push({ text: "одинаковые показания (" + a + "): потребление 0 кВт·ч", comment: "показания одинаковые" });
+      if (!multiple) w.push(notMultiple);
+    } else {
+      var d = b - a;
+      if (!rates.some(function (r) { return d * r === amt; })) {
+        var old = olderRates(op.date).filter(function (r) { return d * r === amt; })[0], diff = d * rates[0] - amt;
+        if (old) {
+          w.push({ text: "оплата по старому тарифу " + kopText(old) + " ₽/кВт·ч: по действующему " + kopText(rates[0]) + " за " + d + " кВт·ч должно быть " + rub(d * rates[0]) +
+                         (diff > 0 ? " (не хватает " + rub(diff) + ")" : " (переплата " + rub(-diff) + ")"),
+                   comment: "оплата по старому тарифу " + kopText(old) + (diff > 0 ? "; не хватает " + rub(diff) : "; переплата " + rub(-diff)) });
+        } else {
+          w.push({ text: "сумма " + rub(amt) + " не соответствует показаниям: " + d + " кВт·ч × " + kopText(rates[0]) + " = " + rub(d * rates[0]),
+                   comment: "сумма не соответствует показаниям" });
+        }
+      }
+      if (last && last.cur !== a) {
+        w.push({ text: "предыдущие показания (" + a + ") не совпадают с последними известными (" + last.cur + ", оплата от " + ruFromIso(last.date) + ")", comment: "" });
+      }
+    }
+    return w;
+  }
+
+  /* Классифицирует все операции выписки по порядку и добавляет предупреждения. -> массив результатов classify + warns, comm */
+  function classifyAll(ops, rules) {
+    var lastByPlot = {};
+    return ops.map(function (op) {
+      var c = classify(op, rules);
+      c.warns = [];
+      if (op.credit && c.cat === "ЭЛЕКТРОЭНЕРГИЯ" && /^УЧАСТОК № \d+$/.test(c.contr)) {
+        c.warns = electroWarns(op, c, lastByPlot[c.contr]);
+        var rd = c.readings;
+        if (rd) {
+          var a = rd.kind === "t12" ? rd.t1 : rd.prev, b = rd.kind === "t12" ? rd.t2 : rd.cur;
+          if (a !== null && b !== null && b >= a) lastByPlot[c.contr] = { cur: b, date: op.date };
+        }
+      }
+      c.comm = c.warns.map(function (x) { return x.comment; }).filter(Boolean).join("; ");
+      if (c.warns.length && c.status === "high") c.status = "check";
+      return c;
+    });
+  }
+
   // ---------- сверка с таблицей: какие операции уже внесены ----------
   /* Возвращает для каждой операции индекс строки таблицы или -1 (новая операция).
    * Допускаем сдвиг даты до 7 дней: часть платежей внесена датой платежа, а не датой операции в банке. */
@@ -248,7 +332,7 @@
 
   root.Bank = {
     CATEGORIES: CATEGORIES, parseStatement: parseStatement, readLedger: readLedger, classify: classify,
-    matchLedger: matchLedger, buildOutput: buildOutput, normKey: normKey, suggestPayee: suggestPayee,
+    matchLedger: matchLedger, buildOutput: buildOutput, classifyAll: classifyAll, TARIFFS: TARIFFS, normKey: normKey, suggestPayee: suggestPayee,
     ruFromIso: ruFromIso, kopText: kopText, normContr: normContr, normCat: normCat, dayNum: dayNum
   };
 })(window);
