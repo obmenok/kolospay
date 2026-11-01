@@ -135,7 +135,7 @@
       var row = {
         date: date, debit: num(get(rr, "РАСХОД")), credit: num(get(rr, "ПРИХОД")),
         cat: normCat(str(get(rr, "НАЗНАЧЕНИЕ"))), contr: normContr(str(get(rr, "КОНТРАГЕНТ"))),
-        comm: commentKey ? str(get(rr, commentKey)) : "", rowNum: rr + 1
+        comm: commentKey ? str(get(rr, commentKey)) : "", doc: str(get(rr, "ДОКУМЕНТ")), rowNum: rr + 1
       };
       if (openBal === null) {
         var b = get(rr, "ОСТАТОК");
@@ -324,7 +324,7 @@
     var clean = function (s) { return String(s || "").replace(/[\t\r\n]+/g, " ").trim(); };
     var lines = rows.map(function (r, i) {
       var n = firstRow + i, p = n - 1;
-      return [ruFromIso(r.date), "=B" + p + "+D" + p + "-C" + p, r.debit ? kopText(r.debit) : "", r.credit ? kopText(r.credit) : "",
+      return [ruFromIso(r.date), clean(r.doc), "=C" + p + "+E" + p + "-D" + p, r.debit ? kopText(r.debit) : "", r.credit ? kopText(r.credit) : "",
               clean(r.cat), clean(r.contr), clean(r.comm)].join("\t");
     });
     return lines.join("\n");

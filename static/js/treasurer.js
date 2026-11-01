@@ -121,6 +121,10 @@
     var matched = B.matchLedger(st.ops, led.rows, function (i) { return cl[i].contr; });
     var used = {}; matched.forEach(function (m) { if (m >= 0) used[m] = 1; });
     var plots = {}; (window.PLOTS || []).forEach(function (p) { plots[p.number] = 1; });
+    state.backfill = [];
+    matched.forEach(function (m, i) {
+      if (m >= 0 && !led.rows[m].doc && st.ops[i].doc) state.backfill.push({ rowNum: led.rows[m].rowNum, doc: st.ops[i].doc, date: led.rows[m].date, debit: led.rows[m].debit, credit: led.rows[m].credit });
+    });
     var docs = {}; led.rows.forEach(function (r) { if (r.doc) docs[r.doc] = 1; });
     matched.forEach(function (m, i) { if (m < 0 && st.ops[i].doc && docs[st.ops[i].doc]) matched[i] = -2; });
     var lateLimit = B.dayNum(led.lastDate) - 7;
@@ -174,7 +178,19 @@
     var late = rows.filter(function (r) { return r.late; }).length;
     if (late) html += '<p class="warnt">' + late + " " + plural(late, "операция датирована", "операции датированы", "операций датировано") +
       " заметно раньше последней строки таблицы: они будут добавлены в конец, проверьте порядок.</p>";
+    if (SCRIPT_URL && state.backfill && state.backfill.length) {
+      html += '<p class="warnt">В таблице у ' + state.backfill.length + " " + plural(state.backfill.length, "строки", "строк", "строк") +
+        ' нет номера документа, а в выписке он есть. <button type="button" class="btn" id="backfill">Проставить номера документов</button> <span id="bf-msg"></span></p>';
+    }
     $("summary").innerHTML = html;
+    var bf = $("backfill");
+    if (bf) bf.addEventListener("click", function () {
+      if (!confirm("Проставить номера документов в " + state.backfill.length + " строках таблицы? Другие данные не меняются.")) return;
+      bf.disabled = true; $("bf-msg").textContent = "Записываю…";
+      remote({ action: "setDocs", items: state.backfill }).then(function (j) {
+        return loadRemoteLedger().then(function () { analyze(); $("summary").insertAdjacentHTML("beforeend", '<p class="good">Номера документов проставлены: ' + j.set + (j.skipped ? ", пропущено (данные строки не совпали): " + j.skipped : "") + ".</p>"); });
+      }).catch(function (err) { $("bf-msg").textContent = "✗ " + err.message; bf.disabled = false; });
+    });
   }
 
   // ---------- список операций ----------
@@ -275,9 +291,9 @@
     var ok = okRows(), pending = rows.filter(function (r) { return r.state === "pending"; }).length, skip = rows.filter(function (r) { return r.state === "skip"; }).length;
     $("output").hidden = false;
     var msg = "Подтверждено <b>" + ok.length + "</b> из " + rows.length + (skip ? ", не вносить: " + skip : "") + (pending ? ", осталось проверить: <b>" + pending + "</b>" : "") + ".";
-    var bal = led.endBalance, th = "<tr><th>ДАТА</th><th>ОСТАТОК</th><th>РАСХОД</th><th>ПРИХОД</th><th>НАЗНАЧЕНИЕ</th><th>КОНТРАГЕНТ</th><th>Комментарий</th></tr>", body = "";
+    var bal = led.endBalance, th = "<tr><th>ДАТА</th><th>ДОКУМЕНТ</th><th>ОСТАТОК</th><th>РАСХОД</th><th>ПРИХОД</th><th>НАЗНАЧЕНИЕ</th><th>КОНТРАГЕНТ</th><th>Комментарий</th></tr>", body = "";
     ok.forEach(function (r) {
-      body += "<tr><td>" + B.ruFromIso(r.date) + '</td><td class="num">' + (bal === null ? "—" : money(bal)) + '</td><td class="num">' + (r.debit ? money(r.debit) : "") +
+      body += "<tr><td>" + B.ruFromIso(r.date) + "</td><td>" + esc(r.doc) + '</td><td class="num">' + (bal === null ? "—" : money(bal)) + '</td><td class="num">' + (r.debit ? money(r.debit) : "") +
         '</td><td class="num">' + (r.credit ? money(r.credit) : "") + "</td><td>" + esc(r.cat) + "</td><td>" + esc(r.contr) + "</td><td>" + esc(r.comm) + "</td></tr>";
       if (bal !== null) bal += r.credit - r.debit;
     });
@@ -319,19 +335,20 @@
   $("download").addEventListener("click", function () {
     var rows = okRows(), led = state.ledger, ws = {};
     var put = function (r, c, cell) { ws[XLSX.utils.encode_cell({ r: r, c: c })] = cell; };
-    ["ДАТА", "ОСТАТОК", "РАСХОД", "ПРИХОД", "НАЗНАЧЕНИЕ", "КОНТРАГЕНТ", "Комментарий"].forEach(function (h, c) { put(0, c, { t: "s", v: h }); });
+    ["ДАТА", "ДОКУМЕНТ", "ОСТАТОК", "РАСХОД", "ПРИХОД", "НАЗНАЧЕНИЕ", "КОНТРАГЕНТ", "Комментарий"].forEach(function (h, c) { put(0, c, { t: "s", v: h }); });
     var bal = led.endBalance;
     rows.forEach(function (x, i) {
       var r = i + 1;
       put(r, 0, { t: "n", v: B.dayNum(x.date) + 25569, z: "dd.mm.yyyy" });
-      if (bal !== null) put(r, 1, i === 0 ? { t: "n", v: bal / 100, z: "#,##0.00" } : { t: "n", f: "B" + r + "+D" + r + "-C" + r, v: bal / 100, z: "#,##0.00" });
-      if (x.debit) put(r, 2, { t: "n", v: x.debit / 100, z: "#,##0.00" });
-      if (x.credit) put(r, 3, { t: "n", v: x.credit / 100, z: "#,##0.00" });
-      put(r, 4, { t: "s", v: x.cat }); put(r, 5, { t: "s", v: x.contr }); if (x.comm) put(r, 6, { t: "s", v: x.comm });
+      put(r, 1, { t: "s", v: String(x.doc || "") });
+      if (bal !== null) put(r, 2, i === 0 ? { t: "n", v: bal / 100, z: "#,##0.00" } : { t: "n", f: "C" + r + "+E" + r + "-D" + r, v: bal / 100, z: "#,##0.00" });
+      if (x.debit) put(r, 3, { t: "n", v: x.debit / 100, z: "#,##0.00" });
+      if (x.credit) put(r, 4, { t: "n", v: x.credit / 100, z: "#,##0.00" });
+      put(r, 5, { t: "s", v: x.cat }); put(r, 6, { t: "s", v: x.contr }); if (x.comm) put(r, 7, { t: "s", v: x.comm });
       if (bal !== null) bal += x.credit - x.debit;
     });
-    ws["!ref"] = "A1:G" + (rows.length + 1);
-    ws["!cols"] = [{ wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 20 }, { wch: 24 }];
+    ws["!ref"] = "A1:H" + (rows.length + 1);
+    ws["!cols"] = [{ wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 20 }, { wch: 24 }];
     var wb = { SheetNames: ["Новые строки"], Sheets: { "Новые строки": ws } };
     var out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     var url = URL.createObjectURL(new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
