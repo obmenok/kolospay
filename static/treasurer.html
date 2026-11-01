@@ -37,6 +37,27 @@
     <span class="drop-hint">Запоминается в этом браузере. Нужен, чтобы читать и писать в таблицу.</span>
   </section>
 
+  <section id="cash" class="summary" hidden>
+    <h2>Приём наличных</h2>
+    <div id="cash-info"></div>
+    <div class="cash-form">
+      <label>Операция <select id="c-dir"><option value="in">Приход: приняли от владельца</option><option value="out">Расход: сдали в банк, выдали</option></select></label>
+      <label>Дата <input type="date" id="c-date"></label>
+      <label id="c-plot-l">Участок № <input type="number" id="c-plot" min="1" inputmode="numeric"></label>
+      <label id="c-contr-l" hidden>Контрагент <input id="c-contr" list="contrs" autocomplete="off"></label>
+      <label>Назначение <select id="c-cat"></select></label>
+      <label>Сумма, ₽ <input id="c-sum" inputmode="decimal" autocomplete="off"></label>
+      <div id="c-rd-box" class="rd-box" hidden>
+        <label>Предыдущее показание <input id="c-prev" inputmode="numeric"></label>
+        <label>Текущее показание <input id="c-cur" inputmode="numeric"></label>
+        <div id="c-rd-hint" class="drop-hint"></div>
+      </div>
+      <label class="wide">Комментарий <input id="c-comm" autocomplete="off"></label>
+    </div>
+    <div id="c-warn"></div>
+    <button type="button" id="c-add" class="btn primary" disabled>Добавить в кассу</button> <span id="c-msg" class="out-msg"></span>
+  </section>
+
   <section id="summary" class="summary" hidden></section>
 
   <section id="review" hidden>
@@ -73,5 +94,6 @@
 <script src="js/bank.js"></script>
 <script src="js/treasurer-config.js"></script>
 <script src="js/treasurer.js"></script>
+<script src="js/cash.js"></script>
 </body>
 </html>

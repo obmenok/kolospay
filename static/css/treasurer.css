@@ -83,3 +83,11 @@ body { margin:0; background:#f6f8fa; color:var(--text); font:14px/1.5 "Helvetica
 .dir { display: inline-block; padding: 1px 7px; margin-right: 6px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
 .dir.in { background: #e3f5e8; color: #1a7f37; }
 .dir.out { background: #fde8e8; color: #c62828; }
+
+.cash-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+.cash-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #555; }
+.cash-form input, .cash-form select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font: inherit; font-size: 14px; }
+.cash-form .wide, .cash-form .rd-box { grid-column: 1 / -1; }
+.cash-form .rd-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+#c-warn .warnt { margin: 4px 0; }
+.cash-form [hidden] { display: none; }
