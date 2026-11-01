@@ -198,7 +198,7 @@
     return state.rows.filter(function (r) { return r.state === "pending" && r.status === "high" && r.cat && r.contr; });
   }
   function rowHtml(r) {
-    var amount = r.credit ? '<span class="sum in">+' + money(r.credit) + "</span>" : '<span class="sum out">−' + money(r.debit) + "</span>";
+    var amount = r.credit ? '<span class="dir in">ПРИХОД</span><span class="sum in">+' + money(r.credit) + "</span>" : '<span class="dir out">РАСХОД</span><span class="sum out">−' + money(r.debit) + "</span>";
     var chip = { high: "Уверенно", check: "Проверьте", none: "Нужно выбрать" }[r.status];
     var rd = "";
     if (r.readings) {
@@ -284,7 +284,11 @@
   });
 
   // ---------- итог: что внести ----------
-  function okRows() { return state.rows.filter(function (r) { return r.state === "ok"; }); }
+  function okRows() {
+    return state.rows.filter(function (r) { return r.state === "ok"; }).map(function (r) {
+      r.comm = String(r.comm || "").trim(); r.comm = r.comm.charAt(0).toUpperCase() + r.comm.slice(1); return r;
+    });
+  }
   function updateOutput() {
     var rows = state.rows, led = state.ledger, st = state.stmt;
     if (!rows.length || !led) { $("output").hidden = true; return; }

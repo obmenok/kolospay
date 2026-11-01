@@ -77,9 +77,9 @@ function append(req) {
     src.copyTo(target, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
     var B = colL(c['ОСТАТОК']), D = colL(c['РАСХОД']), P = colL(c['ПРИХОД']);
     var vals = fresh.map(function (x, i) {
-      var p = first + i - 1, d = x.date.split('-'), row = [];
+      var p = first + i - 1, row = [];
       for (var k = 0; k < w; k++) row.push('');
-      row[c['ДАТА']] = new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]));
+      row[c['ДАТА']] = Utilities.parseDate(x.date, tz(), 'yyyy-MM-dd');   // в часовом поясе таблицы
       row[c['ДОКУМЕНТ']] = String(x.doc || '');
       row[c['ОСТАТОК']] = '=' + B + p + '+' + P + p + '-' + D + p;
       row[c['РАСХОД']] = x.debit ? x.debit / 100 : '';
@@ -89,9 +89,8 @@ function append(req) {
       row[c['КОММЕНТАРИЙ']] = String(x.comm || '');
       return row;
     });
-    sh.getRange(first, c['ДОКУМЕНТ'] + 1, fresh.length, 1).setNumberFormat('@');
+    try { sh.getRange(first, c['ДОКУМЕНТ'] + 1, fresh.length, 1).setNumberFormat('@'); } catch (e) {}
     target.setValues(vals);
-    sh.getRange(first, c['ДАТА'] + 1, fresh.length, 1).setNumberFormat('dd.MM.yyyy');
     SpreadsheetApp.flush();
     return { ok: true, added: fresh.length, skipped: skipped, firstRow: first, lastRow: first + fresh.length - 1 };
   } finally { lock.releaseLock(); }
@@ -115,8 +114,21 @@ function setDocs(req) {
       docCol[i][0] = String(it.doc); set++;
     });
     var rng = sh.getRange(1, col, n, 1);
-    rng.setNumberFormat('@'); rng.setValues(docCol);
+    try { rng.setNumberFormat('@'); } catch (e) {}
+    rng.setValues(docCol);
     SpreadsheetApp.flush();
     return { ok: true, set: set, skipped: skipped };
   } finally { lock.releaseLock(); }
+}
+
+/** РАЗОВО: исправить даты строк, внесённых первой версией скрипта (сдвиг на −1 день).
+ *  Запустите функцию один раз вручную. Диапазон строк задайте ниже. */
+function fixShiftedDates() {
+  var FIRST = 405, LAST = 445;   // строки, внесённые со страницы казначея
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('DATES_FIXED')) throw new Error('Уже исправлено. Повторный запуск сдвинул бы даты ещё раз.');
+  var sh = sheet(), c = columns(sh), rng = sh.getRange(FIRST, c['ДАТА'] + 1, LAST - FIRST + 1, 1);
+  var v = rng.getValues().map(function (r) { return [r[0] instanceof Date ? new Date(r[0].getTime() + 86400000) : r[0]]; });
+  rng.setValues(v);
+  props.setProperty('DATES_FIXED', '1');
 }

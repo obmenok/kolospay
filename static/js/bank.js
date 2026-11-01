@@ -268,7 +268,7 @@
         }
       }
       if (last && last.cur !== a) {
-        w.push({ text: "предыдущие показания (" + a + ") не совпадают с последними известными (" + last.cur + ", оплата от " + ruFromIso(last.date) + ")", comment: "" });
+        w.push({ text: "предыдущие показания (" + a + ") не совпадают с последними известными (" + last.cur + ", оплата от " + ruFromIso(last.date) + ")", comment: "Предыдущие показания (" + a + ") не совпадают с последними известными (" + last.cur + ", оплата от " + ruFromIso(last.date) + ")" });
       }
     }
     return w;
@@ -289,6 +289,7 @@
         }
       }
       c.comm = c.warns.map(function (x) { return x.comment; }).filter(Boolean).join("; ");
+      c.comm = c.comm.charAt(0).toUpperCase() + c.comm.slice(1);
       if (c.warns.length && c.status === "high") c.status = "check";
       return c;
     });
