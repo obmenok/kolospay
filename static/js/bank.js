@@ -275,13 +275,15 @@
   }
 
   /* Классифицирует все операции выписки по порядку и добавляет предупреждения. -> массив результатов classify + warns, comm */
-  function classifyAll(ops, rules) {
+  function classifyAll(ops, rules, lastKnown) {
     var lastByPlot = {};
     return ops.map(function (op) {
       var c = classify(op, rules);
       c.warns = [];
       if (op.credit && c.cat === "ЭЛЕКТРОЭНЕРГИЯ" && /^УЧАСТОК № \d+$/.test(c.contr)) {
-        c.warns = electroWarns(op, c, lastByPlot[c.contr]);
+        var seed = lastKnown && lastKnown[c.contr], prevSeen = lastByPlot[c.contr];
+        if (seed && seed.date <= op.date && (!prevSeen || seed.date > prevSeen.date)) prevSeen = seed;   // последнее известное из таблицы «Показания»
+        c.warns = electroWarns(op, c, prevSeen);
         var rd = c.readings;
         if (rd) {
           var a = rd.kind === "t12" ? rd.t1 : rd.prev, b = rd.kind === "t12" ? rd.t2 : rd.cur;

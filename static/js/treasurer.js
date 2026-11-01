@@ -70,7 +70,12 @@
       if (!confirm("Внести в таблицу строк: " + rows.length + "?")) return;
       $("send").disabled = true; $("out-msg").textContent = "Отправляю…";
       remote({ action: "append", expectLastRow: state.ledger.lastRow, rows: rows.map(function (r) {
-        return { date: r.date, debit: r.debit, credit: r.credit, cat: r.cat, contr: r.contr, comm: r.comm, doc: r.doc };
+        var o = { date: r.date, debit: r.debit, credit: r.credit, cat: r.cat, contr: r.contr, comm: r.comm, doc: r.doc }, rd = r.readings;
+        if (r.credit && r.cat === "ЭЛЕКТРОЭНЕРГИЯ" && /^УЧАСТОК № \d+$/.test(r.contr) && rd) {
+          var a = rd.kind === "t12" ? rd.t1 : rd.prev, b = rd.kind === "t12" ? rd.t2 : rd.cur;
+          if (a !== null && a !== undefined && b !== null && b !== undefined) o.rd = { plot: +r.contr.replace(/\D/g, ""), prev: a, cur: b, status: r.comm ? "уточнить" : "ок" };
+        }
+        return o;
       }) }).then(function (j) {
         rememberRules();
         return loadRemoteLedger().then(function () {
@@ -117,10 +122,22 @@
     state.rows = [];
     if (!st || !led) return;
 
-    var cl = B.classifyAll(st.ops, state.rules);
+    var cl = B.classifyAll(st.ops, state.rules, led.readings);
     var matched = B.matchLedger(st.ops, led.rows, function (i) { return cl[i].contr; });
     var used = {}; matched.forEach(function (m) { if (m >= 0) used[m] = 1; });
     var plots = {}; (window.PLOTS || []).forEach(function (p) { plots[p.number] = 1; });
+    state.rdBackfill = [];
+    if (led.readingDocs) {
+      var haveRd = {}; led.readingDocs.forEach(function (d) { haveRd[d] = 1; });
+      st.ops.forEach(function (o, i) {
+        var c = cl[i], rd = c.readings;
+        if (!o.credit || c.cat !== "ЭЛЕКТРОЭНЕРГИЯ" || !/^УЧАСТОК № \d+$/.test(c.contr) || !rd || haveRd[o.doc]) return;
+        var a = rd.kind === "t12" ? rd.t1 : rd.prev, b = rd.kind === "t12" ? rd.t2 : rd.cur;
+        if (a === null || b === null || a === undefined || b === undefined) return;
+        state.rdBackfill.push({ date: o.date, plot: +c.contr.replace(/\D/g, ""), prev: a, cur: b, amount: o.credit / 100, source: "банк", doc: o.doc,
+          status: c.comm ? "уточнить" : "ок", comm: c.comm || "" });
+      });
+    }
     state.backfill = [];
     matched.forEach(function (m, i) {
       if (m >= 0 && !led.rows[m].doc && st.ops[i].doc) state.backfill.push({ rowNum: led.rows[m].rowNum, doc: st.ops[i].doc, date: led.rows[m].date, debit: led.rows[m].debit, credit: led.rows[m].credit });
@@ -182,7 +199,19 @@
       html += '<p class="warnt">В таблице у ' + state.backfill.length + " " + plural(state.backfill.length, "строки", "строк", "строк") +
         ' нет номера документа, а в выписке он есть. <button type="button" class="btn" id="backfill">Проставить номера документов</button> <span id="bf-msg"></span></p>';
     }
+    if (SCRIPT_URL && state.rdBackfill && state.rdBackfill.length) {
+      html += '<p class="warnt">В выписке ' + state.rdBackfill.length + " " + plural(state.rdBackfill.length, "платёж", "платежа", "платежей") +
+        ' с показаниями, которых нет в журнале показаний. <button type="button" class="btn" id="rd-backfill">Заполнить журнал показаний</button> <span id="rd-msg"></span></p>';
+    }
     $("summary").innerHTML = html;
+    var rb = $("rd-backfill");
+    if (rb) rb.addEventListener("click", function () {
+      if (!confirm("Добавить в лист «Показания» записей: " + state.rdBackfill.length + "?")) return;
+      rb.disabled = true; $("rd-msg").textContent = "Записываю…";
+      remote({ action: "addReadings", rows: state.rdBackfill }).then(function (j) {
+        return loadRemoteLedger().then(function () { analyze(); $("summary").insertAdjacentHTML("beforeend", '<p class="good">Журнал показаний: добавлено ' + j.added + (j.skipped ? ", уже были: " + j.skipped : "") + ".</p>"); });
+      }).catch(function (err) { $("rd-msg").textContent = "✗ " + err.message; rb.disabled = false; });
+    });
     var bf = $("backfill");
     if (bf) bf.addEventListener("click", function () {
       if (!confirm("Проставить номера документов в " + state.backfill.length + " строках таблицы? Другие данные не меняются.")) return;
