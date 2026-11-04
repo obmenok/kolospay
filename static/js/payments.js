@@ -14,7 +14,7 @@
       KPP: "434501001"
     },
     feeRatePerM2Kop: 500,      // 5 ₽ за м² (500 ₽ за сотку)
-    electricityRateKop: 505,   // 5,05 ₽ за кВт·ч
+    electricityRateKop: 550,   // 5,05 ₽ за кВт·ч
     maxAmountRub: 10000000,
     showEncumbrances: true     // показывать ипотеку и запрещение регистрации; false — скрыть
   };
