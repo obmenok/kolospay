@@ -99,4 +99,5 @@
   var save = $("code-save");
   if (save) save.addEventListener("click", function () { setTimeout(load, 50); });
   load();
+  document.addEventListener("kolos-unlocked", load);
 })();

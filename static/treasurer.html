@@ -5,17 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Казначей — выписка банка</title>
-  <link rel="stylesheet" href="css/treasurer.css">
+  <link rel="stylesheet" href="css/treasurer.css?v=20261107">
 </head>
-<body>
+<body class="locked tab-bank">
 <div class="wrap">
   <header class="top">
     <a class="back" href="../">← В приложение</a>
     <h1>Казначей: разнесение выписки</h1>
   </header>
+  <section id="code-box" class="summary login" hidden>
+    <h2>Вход</h2>
+    <label>Код казначея <input type="password" id="code" autocomplete="off"></label>
+    <button type="button" id="code-save" class="btn primary">Войти</button>
+    <div id="code-msg" class="badt"></div>
+    <span class="drop-hint">Код запоминается в этом браузере.</span>
+  </section>
+
+  <div id="app">
+  <nav class="tabs" id="tabs" hidden>
+    <button type="button" class="tab active" data-tab="bank">Выписка банка</button>
+    <button type="button" class="tab" data-tab="cash">Наличные</button>
+  </nav>
   <p class="privacy">Выписка обрабатывается прямо в вашем браузере и на сайт не отправляется.
     В таблицу Google уходят только строки, которые вы подтвердили (дата, сумма, назначение, контрагент, комментарий, номер документа).</p>
 
+  <div id="pane-bank">
   <section class="files">
     <label class="drop" id="drop-stmt">
       <span class="drop-title">1. Выписка банка</span>
@@ -31,33 +45,6 @@
     </label>
   </section>
 
-  <section id="code-box" class="summary" hidden>
-    <label>Код казначея: <input type="password" id="code" autocomplete="off"></label>
-    <button type="button" id="code-save" class="btn">Сохранить</button>
-    <span class="drop-hint">Запоминается в этом браузере. Нужен, чтобы читать и писать в таблицу.</span>
-  </section>
-
-  <section id="cash" class="summary" hidden>
-    <h2>Приём наличных</h2>
-    <div id="cash-info"></div>
-    <div class="cash-form">
-      <label>Операция <select id="c-dir"><option value="in">Приход: приняли от владельца</option><option value="out">Расход: сдали в банк, выдали</option></select></label>
-      <label>Дата <input type="date" id="c-date"></label>
-      <label id="c-plot-l">Участок № <input type="number" id="c-plot" min="1" inputmode="numeric"></label>
-      <label id="c-contr-l" hidden>Контрагент <input id="c-contr" list="contrs" autocomplete="off"></label>
-      <label>Назначение <select id="c-cat"></select></label>
-      <label>Сумма, ₽ <input id="c-sum" inputmode="decimal" autocomplete="off"></label>
-      <div id="c-rd-box" class="rd-box" hidden>
-        <label>Предыдущее показание <input id="c-prev" inputmode="numeric"></label>
-        <label>Текущее показание <input id="c-cur" inputmode="numeric"></label>
-        <div id="c-rd-hint" class="drop-hint"></div>
-      </div>
-      <label id="c-period-l" hidden>За какой период взнос <select id="c-period"><option value="">Текущий год</option><option value="adv">Аванс за следующий год</option><option value="debt">Долг за прошлый год</option></select></label>
-      <label class="wide">Комментарий <input id="c-comm" autocomplete="off"></label>
-    </div>
-    <div id="c-warn"></div>
-    <button type="button" id="c-add" class="btn primary" disabled>Добавить в кассу</button> <span id="c-msg" class="out-msg"></span>
-  </section>
 
   <section id="summary" class="summary" hidden></section>
 
@@ -85,8 +72,34 @@
     </div>
     <p id="out-help" class="out-help"></p>
   </section>
+  </div>
 
-  <footer class="foot"><button type="button" id="reset-rules" class="link"></button></footer>
+  <div id="pane-cash">
+  <section id="cash" class="summary" hidden>
+    <h2>Приём наличных</h2>
+    <div id="cash-info"></div>
+    <div class="cash-form">
+      <label>Операция <select id="c-dir"><option value="in">Приход: приняли от владельца</option><option value="out">Расход: сдали в банк, выдали</option></select></label>
+      <label>Дата <input type="date" id="c-date"></label>
+      <label id="c-plot-l">Участок № <input type="number" id="c-plot" min="1" inputmode="numeric"></label>
+      <label id="c-contr-l" hidden>Контрагент <input id="c-contr" list="contrs" autocomplete="off"></label>
+      <label>Назначение <select id="c-cat"></select></label>
+      <label>Сумма, ₽ <input id="c-sum" inputmode="decimal" autocomplete="off"></label>
+      <div id="c-rd-box" class="rd-box" hidden>
+        <label>Предыдущее показание <input id="c-prev" inputmode="numeric"></label>
+        <label>Текущее показание <input id="c-cur" inputmode="numeric"></label>
+        <div id="c-rd-hint" class="drop-hint"></div>
+      </div>
+      <label id="c-period-l" hidden>За какой период взнос <select id="c-period"><option value="">Текущий год</option><option value="adv">Аванс за следующий год</option><option value="debt">Долг за прошлый год</option></select></label>
+      <label class="wide">Комментарий <input id="c-comm" autocomplete="off"></label>
+    </div>
+    <div id="c-warn"></div>
+    <button type="button" id="c-add" class="btn primary" disabled>Добавить в кассу</button> <span id="c-msg" class="out-msg"></span>
+  </section>
+  </div>
+
+  <footer class="foot"><button type="button" id="reset-rules" class="link"></button> <button type="button" id="logout" class="link" hidden>Выйти</button></footer>
+  </div>
 </div>
 
 <datalist id="contrs"></datalist>
@@ -94,7 +107,8 @@
 <script src="js/plots.js"></script>
 <script src="js/bank.js?v=20261107"></script>
 <script src="js/treasurer-config.js"></script>
-<script src="js/treasurer.js"></script>
+<script src="js/treasurer.js?v=20261107"></script>
 <script src="js/cash.js?v=20261107"></script>
+<script src="js/gate.js?v=20261107"></script>
 </body>
 </html>

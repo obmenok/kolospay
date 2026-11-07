@@ -91,3 +91,16 @@ body { margin:0; background:#f6f8fa; color:var(--text); font:14px/1.5 "Helvetica
 .cash-form .rd-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
 #c-warn .warnt { margin: 4px 0; }
 .cash-form [hidden] { display: none; }
+
+/* вход и вкладки */
+body.locked #app { display:none; }
+body.locked .privacy { display:none; }
+.login { max-width:420px; margin:24px auto; }
+.login label { display:block; margin-bottom:10px; }
+.login input { display:block; width:100%; margin-top:4px; padding:8px 10px; font:inherit; border:1px solid var(--border); border-radius:6px; }
+.login .btn { width:100%; }
+.tabs { display:flex; gap:8px; margin:10px 0 14px; position:sticky; top:0; z-index:5; background:#f6f8fa; padding:6px 0; }
+.tab { flex:1; font:inherit; font-weight:bold; padding:10px 8px; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; }
+.tab.active { background:var(--accent); border-color:var(--accent-dark); color:#fff; }
+body.tab-bank #pane-cash { display:none; }
+body.tab-cash #pane-bank { display:none; }

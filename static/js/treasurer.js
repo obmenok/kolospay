@@ -58,12 +58,12 @@
     });
   }
   if (SCRIPT_URL) {
-    $("drop-led").hidden = true; $("code-box").hidden = false; $("send").hidden = false;
+    $("drop-led").hidden = true; $("send").hidden = false;
     $("copy").hidden = $("download").hidden = true;
     $("code").value = getCode();
     $("code-save").addEventListener("click", function () {
       try { localStorage.setItem(CODE_KEY, $("code").value.trim()); } catch (e) {}
-      loadRemoteLedger().then(analyze);
+      if (!document.body.classList.contains("locked")) loadRemoteLedger().then(analyze);
     });
     $("send").addEventListener("click", function () {
       var rows = okRows(); if (!rows.length || !state.ledger) return;
@@ -84,6 +84,8 @@
       }).catch(function (err) { $("out-msg").textContent = "✗ " + err.message; }).then(function () { $("send").disabled = false; });
     });
   }
+
+  document.addEventListener("kolos-unlocked", function () { if (SCRIPT_URL) loadRemoteLedger().then(analyze); });
 
   // ---------- загрузка файлов ----------
   $("f-stmt").addEventListener("change", function (e) {
