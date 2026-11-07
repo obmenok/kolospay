@@ -46,6 +46,7 @@
     $("c-plot-l").hidden = !inc; $("c-contr-l").hidden = inc;
     var elec = inc && s.cat === "ЭЛЕКТРОЭНЕРГИЯ" && s.plot > 0;
     $("c-rd-box").hidden = !elec;
+    $("c-period-l").hidden = !(inc && s.cat === "ЧЛЕНСКИЙ ВЗНОС");
     var contr = "УЧАСТОК № " + s.plot, known = st.led && st.led.readings && st.led.readings[contr];
     if (elec) {
       if (!touched.prev) $("c-prev").value = known ? known.cur : "";
@@ -64,7 +65,7 @@
     return warns;
   }
 
-  ["c-dir", "c-date", "c-plot", "c-contr", "c-cat", "c-sum", "c-prev", "c-cur"].forEach(function (id) {
+  ["c-dir", "c-date", "c-plot", "c-contr", "c-cat", "c-sum", "c-prev", "c-cur", "c-period"].forEach(function (id) {
     $(id).addEventListener("input", function () { if (id === "c-prev") touched.prev = true; if (id === "c-plot") touched.prev = false; refresh(); });
     $(id).addEventListener("change", refresh);
   });
@@ -81,12 +82,16 @@
     if (!inc && !contr) return (msg.textContent = "Укажите контрагента.");
     if (warns.length && !confirm("Есть предупреждения:\n" + warns.map(function (w) { return "• " + cap(w.text); }).join("\n") + "\n\nВсё равно внести?")) return;
     if (!confirm((inc ? "Принять " : "Выдать ") + money(s.kop) + " (" + contr + ", " + s.cat + ") от " + B.ruFromIso(s.date) + "?")) return;
-    var row = { date: s.date, debit: inc ? 0 : s.kop, credit: inc ? s.kop : 0, cat: s.cat, contr: contr, comm: cap($("c-comm").value) };
+    var comm = cap($("c-comm").value), per = inc && s.cat === "ЧЛЕНСКИЙ ВЗНОС" ? $("c-period").value : "", yr = parseInt(s.date.slice(0, 4), 10);
+    // пометка периода нужна таблице: по ней «Участки» отделяют аванс и долг от взносов текущего года
+    if (per === "adv" && comm.indexOf("Аванс за") < 0) comm = ("Аванс за " + (yr + 1) + (comm ? ". " + comm : ""));
+    if (per === "debt" && comm.indexOf("За " + (yr - 1)) < 0) comm = ("За " + (yr - 1) + " год" + (comm ? ". " + comm : ""));
+    var row = { date: s.date, debit: inc ? 0 : s.kop, credit: inc ? s.kop : 0, cat: s.cat, contr: contr, comm: comm };
     if (inc && s.cat === "ЭЛЕКТРОЭНЕРГИЯ" && s.prev !== null && s.cur !== null) row.rd = { plot: s.plot, prev: s.prev, cur: s.cur, status: warns.length ? "уточнить" : "ок" };
     $("c-add").disabled = true; msg.textContent = "Записываю…";
     remote({ action: "append", expectLastRow: st.led.lastRow, rows: [row] }).then(function (j) {
       msg.textContent = "✓ Внесено: " + (j.docs && j.docs[0] || "");
-      touched = {}; $("c-sum").value = $("c-prev").value = $("c-cur").value = $("c-comm").value = ""; $("c-plot").value = "";
+      touched = {}; $("c-sum").value = $("c-prev").value = $("c-cur").value = $("c-comm").value = ""; $("c-plot").value = ""; $("c-period").value = "";
       return load();
     }).catch(function (e) { msg.textContent = "✗ " + e.message; $("c-add").disabled = false; });
   });

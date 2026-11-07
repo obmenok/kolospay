@@ -52,6 +52,7 @@
         <label>Текущее показание <input id="c-cur" inputmode="numeric"></label>
         <div id="c-rd-hint" class="drop-hint"></div>
       </div>
+      <label id="c-period-l" hidden>За какой период взнос <select id="c-period"><option value="">Текущий год</option><option value="adv">Аванс за следующий год</option><option value="debt">Долг за прошлый год</option></select></label>
       <label class="wide">Комментарий <input id="c-comm" autocomplete="off"></label>
     </div>
     <div id="c-warn"></div>
@@ -91,9 +92,9 @@
 <datalist id="contrs"></datalist>
 <script src="vendor/xlsx.mini.min.js"></script>
 <script src="js/plots.js"></script>
-<script src="js/bank.js"></script>
+<script src="js/bank.js?v=20261107"></script>
 <script src="js/treasurer-config.js"></script>
 <script src="js/treasurer.js"></script>
-<script src="js/cash.js"></script>
+<script src="js/cash.js?v=20261107"></script>
 </body>
 </html>
