@@ -126,6 +126,37 @@
     return '<div class="row"><span class="label">' + esc(label) + '</span><span class="value">' + esc(value) + "</span></div>";
   }
 
+  // ---------- оплаты и показания по участку (публичная справка, без имён) ----------
+  var PAY_URL = window.KOLOS_SCRIPT_URL || "", payCache = {};
+  function ruDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? m[3] + "." + m[2] + "." + m[1] : iso || ""; }
+  function rub(v) { return Number(v).toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " ₽"; }
+  function payHtml(j) {
+    var h = '<div class="paytitle">Последние оплаты</div>';
+    if (j.payments && j.payments.length) j.payments.forEach(function (x) {
+      h += '<div class="row"><span class="label">' + esc(ruDate(x.d)) + " · " + esc(x.c) + '</span><span class="value">' + esc(rub(x.a)) + "</span></div>";
+    }); else h += '<div class="row"><span class="label">Оплат в таблице пока нет</span></div>';
+    if (j.city) h += '<div class="row"><span class="label">Электроэнергия: напрямую от города</span></div>';
+    else h += row("Последнее показание:", j.reading ? j.reading.v + " (" + ruDate(j.reading.d) + ")" : "нет данных");
+    return h + '<div class="paynote">Данные таблицы казначея на ' + esc(ruDate(j.updated)) + ". Если видите ошибку, сообщите казначею.</div>";
+  }
+  function loadPay(n) {
+    var box = document.getElementById("mypay");
+    if (!box) return;
+    function done(h) {
+      if (selected && selected.getAttribute("data-n") === String(n)) {
+        box.innerHTML = h;
+        var r = rect(), top = parseFloat(tip.style.top) || 0;
+        tip.style.top = Math.max(8, Math.min(top, r.height - tip.offsetHeight - 8)) + "px";
+      }
+    }
+    if (payCache[n]) return done(payHtml(payCache[n]));
+    box.innerHTML = '<div class="paynote">Загружаю…</div>';
+    fetch(PAY_URL + "?plot=" + encodeURIComponent(n)).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) throw new Error(j.error || "Ошибка");
+      payCache[n] = j; done(payHtml(j));
+    }).catch(function () { done('<div class="paynote">Не удалось загрузить данные. Попробуйте позже.</div>'); });
+  }
+
   function show(el, x, y) {
     if (selected) selected.classList.remove("sel");
     selected = el;
@@ -138,11 +169,14 @@
     if (typeof api.tipExtra === "function") {
       try { html += api.tipExtra(n, p) || ""; } catch (err) {}
     }
+    if (PAY_URL && p) html += '<div class="mypay" id="mypay"><button type="button" class="paybtn" id="paybtn">Мои оплаты и показания</button></div>';
     tip.innerHTML = html;
     tip.style.display = "block";
     var r = rect();
     tip.style.left = Math.max(8, Math.min(x, r.width - tip.offsetWidth - 8)) + "px";
     tip.style.top = Math.max(8, Math.min(y + 14, r.height - tip.offsetHeight - 8)) + "px";
+    var pb = document.getElementById("paybtn");
+    if (pb) pb.onclick = function () { loadPay(n); };
     if (typeof api.onSelect === "function") { try { api.onSelect(n, el); } catch (err) {} }
   }
 

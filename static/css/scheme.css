@@ -80,3 +80,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg);
 @media (max-width: 600px) {
   #zoom, #search { display: none; }
 }
+
+#tip .mypay { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e3e3e3; }
+#tip .paybtn { width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font: inherit; font-size: 13px; cursor: pointer; }
+#tip .paytitle { font-weight: 600; margin-bottom: 6px; }
+#tip .paynote { color: #777; font-size: 11px; margin-top: 6px; }
