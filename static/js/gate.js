@@ -11,8 +11,7 @@
 
   // ---------- вкладки ----------
   function setTab(name) {
-    body.classList.toggle("tab-bank", name === "bank");
-    body.classList.toggle("tab-cash", name === "cash");
+    ["bank", "cash", "verify"].forEach(function (n) { body.classList.toggle("tab-" + n, name === n); });
     Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === name); });
     try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
   }
@@ -20,7 +19,7 @@
     b.addEventListener("click", function () { setTab(b.getAttribute("data-tab")); });
   });
   var saved = ""; try { saved = localStorage.getItem(TAB_KEY) || ""; } catch (e) {}
-  setTab(saved === "cash" ? "cash" : "bank");
+  setTab(saved === "cash" || saved === "verify" ? saved : "bank");
 
   // как только появляется список подтверждения или итог по выписке — показываем вкладку банка
   function showBank() { if (!body.classList.contains("tab-bank")) setTab("bank"); try { $("pane-bank").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }

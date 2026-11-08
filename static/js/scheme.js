@@ -137,6 +137,7 @@
     }); else h += '<div class="row"><span class="label">Оплат в таблице пока нет</span></div>';
     if (j.city) h += '<div class="row"><span class="label">Электроэнергия: напрямую от города</span></div>';
     else h += row("Последнее показание:", j.reading ? j.reading.v + " (" + ruDate(j.reading.d) + ")" : "нет данных");
+    if (j.verified) h += '<div class="row"><span class="label">Показания подтверждены фото ' + esc(ruDate(j.verified.d)) + '</span><span class="value">' + esc(j.verified.v) + "</span></div>";
     return h + '<div class="paynote">Данные таблицы казначея на ' + esc(ruDate(j.updated)) + ". Если видите ошибку, сообщите казначею.</div>";
   }
   function loadPay(n) {

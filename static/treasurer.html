@@ -25,6 +25,7 @@
   <nav class="tabs" id="tabs" hidden>
     <button type="button" class="tab active" data-tab="bank">Выписка банка</button>
     <button type="button" class="tab" data-tab="cash">Наличные</button>
+    <button type="button" class="tab" data-tab="verify">Счётчик</button>
   </nav>
   <p class="privacy">Выписка обрабатывается прямо в вашем браузере и на сайт не отправляется.
     В таблицу Google уходят только строки, которые вы подтвердили (дата, сумма, назначение, контрагент, комментарий, номер документа).</p>
@@ -98,6 +99,22 @@
   </section>
   </div>
 
+  <div id="pane-verify">
+  <section id="verify" class="summary">
+    <h2>Проверка счётчика по фото</h2>
+    <p class="drop-hint">Фото сохраняется в папку на Google Диске, факт проверки — в таблице. Оплаченные показания не меняются: сравнение только информационное.</p>
+    <div class="cash-form">
+      <label>Участок № <input type="number" id="v-plot" min="1" inputmode="numeric"></label>
+      <label>Дата фото <input type="date" id="v-date"></label>
+      <label>Показание на фото <input id="v-read" inputmode="numeric" autocomplete="off"></label>
+      <label class="wide">Фото счётчика <input type="file" id="v-file" accept="image/*"></label>
+      <label class="wide">Комментарий <input id="v-comm" autocomplete="off"></label>
+    </div>
+    <div id="v-prev" class="drop-hint"></div>
+    <button type="button" id="v-send" class="btn primary">Сохранить проверку</button> <span id="v-msg" class="out-msg"></span>
+  </section>
+  </div>
+
   <footer class="foot"><button type="button" id="reset-rules" class="link"></button> <button type="button" id="logout" class="link" hidden>Выйти</button></footer>
   </div>
 </div>
@@ -109,6 +126,7 @@
 <script src="js/treasurer-config.js"></script>
 <script src="js/treasurer.js?v=20261107"></script>
 <script src="js/cash.js?v=20261107"></script>
-<script src="js/gate.js?v=20261107"></script>
+<script src="js/verify.js?v=20261108"></script>
+<script src="js/gate.js?v=20261108"></script>
 </body>
 </html>
