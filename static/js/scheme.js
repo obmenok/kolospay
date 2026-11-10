@@ -135,6 +135,8 @@
     if (j.payments && j.payments.length) j.payments.forEach(function (x) {
       h += '<div class="row"><span class="label">' + esc(ruDate(x.d)) + " · " + esc(x.c) + '</span><span class="value">' + esc(rub(x.a)) + "</span></div>";
     }); else h += '<div class="row"><span class="label">Оплат в таблице пока нет</span></div>';
+    if (j.meterOn) h += '<div class="row"><span class="label">Счётчик установлен на участке</span><span class="value">№ ' + esc(j.meterOn) + "</span></div>";
+    else if (j.meterWith && j.meterWith.length) h += '<div class="row"><span class="label">Счётчик общий с участком</span><span class="value">№ ' + esc(j.meterWith.join(", № ")) + "</span></div>";
     if (j.city) h += '<div class="row"><span class="label">Электроэнергия: напрямую от города</span></div>';
     else h += row("Последнее показание:", j.reading ? j.reading.v + " (" + ruDate(j.reading.d) + ")" : "нет данных");
     if (j.verified) h += '<div class="row"><span class="label">Показания подтверждены фото ' + esc(ruDate(j.verified.d)) + '</span><span class="value">' + esc(j.verified.v) + "</span></div>";
