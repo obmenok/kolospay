@@ -309,6 +309,7 @@
         var cand = idx[(op.debit ? "o" : "i") + (op.debit || op.credit)] || [], best = null, want = contrOf(oi);
         cand.forEach(function (i) {
           if (!free[i]) return;
+          if (rows[i].doc && op.doc && rows[i].doc !== op.doc) return;   // у обеих строк есть номер документа и он разный — это разные платежи
           var d = Math.abs(dayNum(rows[i].date) - dayNum(op.date));
           if (d > pass.tol) return;
           if (pass.contr && (!want || rows[i].contr !== normContr(want))) return;
