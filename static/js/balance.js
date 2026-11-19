@@ -46,7 +46,7 @@
   function show(b) {
     var s = b.v.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     var d = (typeof b.d === 'string' ? new Date(b.d) : b.d);
-    el.textContent = 'Остаток на счёте СНТ: ' + s + ' ₽ на ' + two(d.getDate()) + '.' + two(d.getMonth() + 1) + '.' + d.getFullYear();
+    el.textContent = 'Остаток на счёте: ' + s + ' ₽ (обновлено ' + two(d.getDate()) + '.' + two(d.getMonth() + 1) + '.' + d.getFullYear() + ')';
     el.hidden = false;
   }
   try { var c = JSON.parse(localStorage.getItem(KEY) || 'null'); if (c && isFinite(c.v)) show(c); } catch (e) {}
