@@ -32,6 +32,7 @@ body {
 select.field { appearance: auto; }
 
 .hint { display: block; margin: 8px 10px 8px; padding: 3px 0; }
+#balance { margin-top: 0; padding-top: 0; }
 .inputs[hidden], [hidden] { display: none !important; }
 
 .result { white-space: pre-line; padding: 3px 0 3px 10px; margin: 0 0 8px; line-height: 1.6; }
