@@ -127,7 +127,7 @@
   }
 
   // ---------- оплаты и показания по участку (публичная справка, без имён) ----------
-  var PAY_URL = window.KOLOS_SCRIPT_URL || "", payCache = {};
+  var PAY_URL = window.KOLOS_API_URL || window.KOLOS_SCRIPT_URL || "", payCache = {};
   function ruDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? m[3] + "." + m[2] + "." + m[1] : iso || ""; }
   function rub(v) { return Number(v).toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " ₽"; }
   function payHtml(j) {
